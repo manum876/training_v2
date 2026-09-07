@@ -1,0 +1,11 @@
+{
+  "name": "Programa de Entrenamiento",
+  "short_name": "Entrenamiento",
+  "description": "Programa de entrenamiento de 16 semanas",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "id": "./"
+}
