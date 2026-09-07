@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Программа · Programa</title>
-<link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#09090b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -441,61 +440,18 @@ function getRestSeconds(rest){
   return Math.max(0, Math.floor(parseFloat(nums[0].replace(",","."))));
 }
 
-let notificationRegistrationPromise = null;
-
-async function getNotificationRegistration(){
-  if(!("serviceWorker" in navigator)) return null;
-  try{
-    notificationRegistrationPromise = notificationRegistrationPromise || navigator.serviceWorker.register("./sw.js",{scope:"./"});
-    return await notificationRegistrationPromise;
-  }catch(e){
-    console.warn("No se pudo registrar el Service Worker de notificaciones",e);
-    return null;
-  }
-}
-
 async function requestNotificationPermission(){
   if(!("Notification" in window)) return false;
   if(Notification.permission === "granted") return true;
   if(Notification.permission === "denied") return false;
-  try{
-    const permission = await Notification.requestPermission();
-    return permission === "granted";
-  }catch(e){
-    console.warn("No se pudo pedir permiso de notificaciones",e);
-    return false;
-  }
+  try{return (await Notification.requestPermission()) === "granted";}catch(e){return false;}
 }
 
-async function sendRestNotification(){
-  if(!("Notification" in window) || Notification.permission !== "granted") return false;
-  const options={
-    body:UI[lang].notificationBody,
-    tag:"ptracker-rest-finished",
-    renotify:true,
-    requireInteraction:false
-  };
-  try{
-    const reg=await getNotificationRegistration();
-    if(reg){
-      await reg.showNotification(UI[lang].notificationTitle,options);
-      return true;
-    }
-  }catch(e){
-    console.warn("Service Worker notification failed",e);
-  }
-  // Fallback for browsers that support the Notification constructor.
-  try{
-    new Notification(UI[lang].notificationTitle,options);
-    return true;
-  }catch(e){
-    console.warn("Notification fallback failed",e);
-    return false;
+function sendRestNotification(){
+  if("Notification" in window && Notification.permission === "granted") {
+    try{new Notification(UI[lang].notificationTitle,{body:UI[lang].notificationBody,tag:"ptracker-rest-finished"});}catch(e){}
   }
 }
-
-// Register early so the Service Worker is ready when the first rest timer ends.
-getNotificationRegistration();
 
 function persistRestTimer(state){
   if(!state) { localStorage.removeItem(REST_STORAGE_KEY); return; }
